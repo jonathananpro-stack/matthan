@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHẦN THI THUYẾT TRÌNH & XỬ LÝ TÌNH HUỐNG</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.3)), url('background.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            color: #fff;
+        }
+        .slide-container {
+            width: 1280px;
+            height: 720px;
+            position: relative;
+            padding: 40px 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .header-title {
+            text-align: center;
+            font-size: 26px;
+            font-weight: 900;
+            color: #ffea00;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.8), 0 0 15px rgba(255,234,0,0.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+            line-height: 1.3;
+        }
+        .header-subtitle {
+            font-size: 18px;
+            font-weight: 700;
+            color: #00ffcc;
+            margin-bottom: 25px;
+            text-shadow: 1px 1px 5px rgba(0,0,0,0.7);
+        }
+        .tab-navigation {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            z-index: 10;
+        }
+        .tab-btn {
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+            border: 1px solid rgba(255,255,255,0.2);
+            color: rgba(255,255,255,0.7);
+            padding: 10px 25px;
+            font-size: 14px;
+            font-weight: 700;
+            border-radius: 30px;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s;
+        }
+        .tab-btn.active {
+            background: linear-gradient(135deg, #ffea00, #ffaa00);
+            border-color: #ffea00;
+            color: #000;
+            box-shadow: 0 4px 15px rgba(255,234,0,0.4);
+        }
+        .main-content {
+            flex: 1;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        .panel-view {
+            display: none;
+            width: 100%;
+            height: 100%;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .panel-view.active { display: flex; }
+
+        /* Giao diện Đồng hồ Gương suốt */
+        .glass-container {
+            border: 2px solid rgba(255, 215, 0, 0.6);
+            border-radius: 20px;
+            padding: 30px 50px;
+            width: 850px;
+            background: transparent;
+            box-shadow: inset 0 0 30px rgba(255, 215, 0, 0.1), 0 10px 40px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        .timer-ball {
+            width: 240px;
+            height: 240px;
+            border-radius: 50%;
+            border: 8px solid #00ff66;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 65px;
+            font-weight: 900;
+            background: radial-gradient(circle at 50% 30%, rgba(255,255,255,0.15) 0%, rgba(0,0,0,0.4) 70%);
+            box-shadow: inset 0 0 25px rgba(0,255,102,0.3), 0 0 30px rgba(0,255,102,0.2);
+            position: relative;
+            margin-bottom: 25px;
+        }
+        .timer-ball::before {
+            content: '';
+            position: absolute;
+            top: 8px;
+            width: 70%;
+            height: 35%;
+            background: linear-gradient(rgba(255,255,255,0.4), rgba(255,255,255,0));
+            border-radius: 50% / 100% 100% 0% 0%;
+        }
+        .timer-ball.warning { border-color: #ff9900; box-shadow: inset 0 0 25px rgba(255,153,0,0.3), 0 0 30px rgba(255,153,0,0.2); }
+        .timer-ball.danger { border-color: #ff3333; box-shadow: inset 0 0 25px rgba(255,51,51,0.3), 0 0 30px rgba(255,51,51,0.2); }
+        
+        .rule-box {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #e0e0e0;
+            margin-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 15px;
+            width: 100%;
+        }
+        .rule-item { display: flex; align-items: center; gap: 5px; }
+
+        /* Thiết kế Vòng quay */
+        .wheel-wrapper {
+            position: relative;
+            width: 480px;
+            height: 480px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #wheelCanvas {
+            width: 100%;
+            height: 100%;
+            transform: rotate(0deg);
+            transition: transform 0s cubic-bezier(0.1, 0.8, 0.25, 1);
+        }
+        .wheel-pointer {
+            position: absolute;
+            top: -15px;
+            z-index: 5;
+            width: 40px;
+            height: 45px;
+            filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.6));
+        }
+        .wheel-center-avatar {
+            position: absolute;
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #fff 40%, #ffea00 100%);
+            border: 4px solid #ffea00;
+            box-shadow: 0 0 20px rgba(255,234,0,0.6), inset 0 0 10px rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            z-index: 4;
+        }
+        .wheel-center-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+        .wheel-center-avatar .default-text {
+            font-size: 16px;
+            font-weight: 900;
+            color: #000;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        /* Nút bấm Aqua 3D dạng kính lồi */
+        .controls-row { display: flex; gap: 20px; margin-top: 5px; }
+        .btn-aqua {
+            position: relative;
+            padding: 14px 35px;
+            font-size: 16px;
+            font-weight: 900;
+            color: #fff;
+            border: none;
+            border-radius: 40px;
+            cursor: pointer;
+            outline: none;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background: linear-gradient(180deg, #00bfff, #0052cc);
+            box-shadow: 0 8px 0 #003399, 0 15px 20px rgba(0,0,0,0.5), inset 0 8px 10px rgba(255,255,255,0.4), inset 0 -8px 10px rgba(0,0,0,0.2);
+            transition: all 0.1s ease;
+        }
+        .btn-aqua::before {
+            content: '';
+            position: absolute;
+            top: 4px; left: 15%; width: 70%; height: 25%;
+            background: linear-gradient(rgba(255,255,255,0.6), rgba(255,255,255,0));
+            border-radius: 20px;
+        }
+        .btn-aqua:active {
+            transform: translateY(6px);
+            box-shadow: 0 2px 0 #003399, 0 5px 10px rgba(0,0,0,0.5), inset 0 8px 10px rgba(255,255,255,0.3);
+        }
+        .btn-aqua.btn-orange {
+            background: linear-gradient(180deg, #ff9900, #cc5200);
+            box-shadow: 0 8px 0 #993300, 0 15px 20px rgba(0,0,0,0.5), inset 0 8px 10px rgba(255,255,255,0.4), inset 0 -8px 10px rgba(0,0,0,0.2);
+        }
+        .btn-aqua.btn-orange:active { box-shadow: 0 2px 0 #993300, 0 5px 10px rgba(0,0,0,0.5); }
+        
+        .btn-aqua.btn-red {
+            background: linear-gradient(180deg, #ff3b30, #b30000);
+            box-shadow: 0 8px 0 #800000, 0 15px 20px rgba(0,0,0,0.5), inset 0 8px 10px rgba(255,255,255,0.4), inset 0 -8px 10px rgba(0,0,0,0.2);
+        }
+        .btn-aqua.btn-red:active { box-shadow: 0 2px 0 #800000, 0 5px 10px rgba(0,0,0,0.5); }
+
+        /* Hiệu ứng hiện kết quả Giám khảo */
+        .gk-result-banner {
+            margin-top: 15px;
+            font-size: 24px;
+            font-weight: 900;
+            color: #ffea00;
+            text-shadow: 0 0 10px rgba(255,234,0,0.8);
+            min-height: 35px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        .gk-result-banner.show { opacity: 1; }
+
+        .flying-text {
+            position: absolute;
+            left: 50%; top: 45%;
+            transform: translate(-50%, -50%);
+            font-size: 55px;
+            font-weight: 900;
+            color: #ff3333;
+            text-shadow: 0 0 20px rgba(255,0,0,0.8), 2px 2px 4px #000;
+            z-index: 100;
+            pointer-events: none;
+            opacity: 0;
+            animation: flyUp 2.5s forwards;
+        }
+        @keyframes flyUp {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            20% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+            40% { transform: translate(-50%, -60%) scale(1); opacity: 1; }
+            100% { transform: translate(-50%, -120%) scale(0.8); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="slide-container">
+        <div class="header-title">HỘI THI Tìm hiểu Nghị quyết Đại hội đại biểu toàn quốc lần thứ XIV của Đảng<br>trong Đảng bộ Bộ Tư lệnh Cảnh sát cơ động tại khu vực II</div>
+        <div id="subTitle" class="header-subtitle">PHẦN THI THUYẾT TRÌNH (TỐI ĐA 15 ĐIỂM)</div>
+
+        <div class="tab-navigation">
+            <button class="tab-btn active" onclick="switchTab('pres')">1. CHUẨN BỊ THUYẾT TRÌNH</button>
+            <button class="tab-btn" onclick="switchTab('wheel')">2. BỐC THĂM GIÁM KHẢO</button>
+            <button class="tab-btn" onclick="switchTab('situa')">3. XỬ LÝ TÌNH HUỐNG</button>
+        </div>
+
+        <div class="main-content">
+            <div id="tab-pres" class="panel-view active">
+                <div class="glass-container">
+                    <div id="pres-ball" class="timer-ball">01:00</div>
+                    <div class="controls-row">
+                        <button id="btn-pres-start" class="btn-aqua" onclick="startPres()">CHUẨN BỊ</button>
+                        <button id="btn-pres-pause" class="btn-aqua btn-orange" style="display:none;" onclick="pausePres()">TẠM DỪNG</button>
+                        <button id="btn-pres-stop" class="btn-aqua btn-red" style="display:none;" onclick="stopPres()">KẾT THÚC</button>
+                    </div>
+                    <div class="rule-box">
+                        <div class="rule-item"><span style="color:#ffea00;">●</span> Thảo luận: 01 phút</div>
+                        <div class="rule-item"><span style="color:#00ffcc;">●</span> Thuyết trình: 06 phút</div>
+                        <div class="rule-item"><span style="color:#ff3333;">●</span> Quá 30s trừ 1đ | Quá 60s trừ 2đ | Quá 90s dừng thi</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-wheel" class="panel-view">
+                <div class="wheel-wrapper">
+                    <svg class="wheel-pointer" viewBox="0 0 40 45">
+                        <polygon points="20,45 5,0 35,0" fill="#ffea00" stroke="#fff" stroke-width="2"/>
+                    </svg>
+                    <canvas id="wheelCanvas" width="500" height="500"></canvas>
+                    <div class="wheel-center-avatar" id="wheelAvatar">
+                        <div class="default-text" id="avatarText">BGK<br>HỘI THI</div>
+                        <img id="avatarImg" src="" alt="Giám khảo">
+                    </div>
+                </div>
+                <div class="gk-result-banner" id="gkResultText"></div>
+                <div class="controls-row" style="margin-top:20px;">
+                    <button id="btn-spin" class="btn-aqua" onclick="spinWheel()">BẤM ĐỂ QUAY</button>
+                </div>
+            </div>
+
+            <div id="tab-situa" class="panel-view">
+                <div class="glass-container">
+                    <div id="situa-ball" class="timer-ball">01:00</div>
+                    <div class="controls-row">
+                        <button id="btn-situa-start" class="btn-aqua" onclick="startSitua()">SUY NGHĨ</button>
+                        <button id="btn-situa-pause" class="btn-aqua btn-orange" style="display:none;" onclick="pauseSitua()">TẠM DỪNG</button>
+                        <button id="btn-situa-stop" class="btn-aqua btn-red" style="display:none;" onclick="stopSitua()">KẾT THÚC TỪNG CHẶNG</button>
+                    </div>
+                    <div class="rule-box">
+                        <div class="rule-item"><span style="color:#ffea00;">●</span> Suy nghĩ: 01 phút</div>
+                        <div class="rule-item"><span style="color:#00ffcc;">●</span> Trả lời tình huống: 02 phút</div>
+                        <div class="rule-item"><span style="color:#ff3333;">●</span> Quá 15s trừ 1đ | Quá 30s trừ 2đ | Quá 60s dừng thi</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="effect-layer"></div>
+
+    <script>
+        // Cấu hình Hình ảnh Ban Giám Khảo (Thay tên file ảnh thực tế của anh vào đây)
+        const gkData = {
+            1: { name: "GIÁM KHẢO SỐ 1", img: "gk1.png" },
+            2: { name: "GIÁM KHẢO SỐ 2", img: "gk2.png" },
+            3: { name: "GIÁM KHẢO SỐ 3", img: "gk3.png" }
+        };
+
+        // --- QUẢN LÝ TAB ---
+        function switchTab(type) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.panel-view').forEach(p => p.classList.remove('active'));
+            
+            const titles = {
+                'pres': 'PHẦN THI THUYẾT TRÌNH (TỐI ĐA 15 ĐIỂM)',
+                'wheel': 'BỐC THĂM NGẪU NHIÊN GIÁM KHẢO ĐẶT CÂU HỎI TÌNH HUỐNG',
+                'situa': 'PHẦN THI XỬ LÝ TÌNH HUỐNG (TỐI ĐA 05 ĐIỂM)'
+            };
+            document.getElementById('subTitle').innerText = titles[type];
+
+            if(type === 'pres') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                document.getElementById('tab-pres').classList.add('active');
+            } else if(type === 'wheel') {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('tab-wheel').classList.add('active');
+                initWheel(); // Vẽ lại vòng quay khi mở tab
+            } else {
+                document.querySelectorAll('.tab-btn')[2].classList.add('active');
+                document.getElementById('tab-situa').classList.add('active');
+            }
+        }
+
+        // --- TAB 1: LOGIC ĐỒNG HỒ THUYẾT TRÌNH ---
+        let presTimer = null, presMode = 'prep', presSecs = 60; 
+        function updatePresUI() {
+            let m = Math.floor(Math.abs(presSecs)/60), s = Math.abs(presSecs)%60;
+            document.getElementById('pres-ball').innerText = (presSecs < 0 ? '-' : '') + (m<10?'0':'')+m + ':' + (s<10?'0':'')+s;
+        }
+        function startPres() {
+            document.getElementById('btn-pres-start').style.display = 'none';
+            document.getElementById('btn-pres-pause').style.display = 'inline-block';
+            document.getElementById('btn-pres-stop').style.display = 'inline-block';
+            if(presTimer) return;
+            presTimer = setInterval(() => {
+                presSecs--;
+                if(presMode === 'prep' && presSecs === 0) {
+                    presMode = 'main'; presSecs = 360;
+                    triggerFlyText("BẮT ĐẦU THUYẾT TRÌNH!");
+                }
+                const ball = document.getElementById('pres-ball');
+                if(presMode === 'main') {
+                    if(presSecs <= 360 && presSecs > 30) { ball.className = 'timer-ball'; }
+                    else if(presSecs <= 30 && presSecs > 0) { ball.className = 'timer-ball warning'; }
+                    else if(presSecs <= 0) {
+                        ball.className = 'timer-ball danger';
+                        let lố = Math.abs(presSecs);
+                        if(lố === 30) triggerFlyText("QUÁ 30 GIÂY! TRỪ 1 ĐIỂM");
+                        if(lố === 60) triggerFlyText("QUÁ 60 GIÂY! TRỪ 2 ĐIỂM");
+                        if(lố === 90) { triggerFlyText("QUÁ 90 GIÂY! KHÔNG TÍNH ĐIỂM"); clearInterval(presTimer); presTimer = null; }
+                    }
+                }
+                updatePresUI();
+            }, 1000);
+        }
+        function pausePres() {
+            clearInterval(presTimer); presTimer = null;
+            document.getElementById('btn-pres-start').innerText = 'TIẾP TỤC';
+            document.getElementById('btn-pres-start').style.display = 'inline-block';
+            document.getElementById('btn-pres-pause').style.display = 'none';
+        }
+        function stopPres() {
+            clearInterval(presTimer); presTimer = null;
+            if(presMode === 'prep') { presMode = 'main'; presSecs = 360; document.getElementById('pres-ball').className = 'timer-ball'; startPres(); }
+            else { presMode = 'prep'; presSecs = 60; document.getElementById('pres-ball').className = 'timer-ball'; updatePresUI(); document.getElementById('btn-pres-start').innerText = 'CHUẨN BỊ'; document.getElementById('btn-pres-start').style.display = 'inline-block'; document.getElementById('btn-pres-pause').style.display = 'none'; document.getElementById('btn-pres-stop').style.display = 'none'; }
+        }
+
+        // --- TAB 3: LOGIC ĐỒNG HỒ XỬ LÝ TÌNH HUỐNG ---
+        let situaTimer = null, situaMode = 'prep', situaSecs = 60;
+        function updateSituaUI() {
+            let m = Math.floor(Math.abs(situaSecs)/60), s = Math.abs(situaSecs)%60;
+            document.getElementById('situa-ball').innerText = (situaSecs < 0 ? '-' : '') + (m<10?'0':'')+m + ':' + (s<10?'0':'')+s;
+        }
+        function startSitua() {
+            document.getElementById('btn-situa-start').style.display = 'none';
+            document.getElementById('btn-situa-pause').style.display = 'inline-block';
+            document.getElementById('btn-situa-stop').style.display = 'inline-block';
+            if(situaTimer) return;
+            situaTimer = setInterval(() => {
+                situaSecs--;
+                if(situaMode === 'prep' && situaSecs === 0) {
+                    situaMode = 'main'; situaSecs = 120;
+                    triggerFlyText("BẮT ĐẦU TRẢ LỜI!");
+                }
+                const ball = document.getElementById('situa-ball');
+                if(situaMode === 'main') {
+                    if(situaSecs <= 120 && situaSecs > 15) { ball.className = 'timer-ball'; }
+                    else if(situaSecs <= 15 && situaSecs > 0) { ball.className = 'timer-ball warning'; }
+                    else if(situaSecs <= 0) {
+                        ball.className = 'timer-ball danger';
+                        let lố = Math.abs(situaSecs);
+                        if(lố === 15) triggerFlyText("QUÁ 15 GIÂY! TRỪ 1 ĐIỂM");
+                        if(lố === 30) triggerFlyText("QUÁ 30 GIÂY! TRỪ 2 ĐIỂM");
+                        if(lố === 60) { triggerFlyText("QUÁ 60 GIÂY! KHÔNG TÍNH ĐIỂM"); clearInterval(situaTimer); situaTimer = null; }
+                    }
+                }
+                updateSituaUI();
+            }, 1000);
+        }
+        function pauseSitua() {
+            clearInterval(situaTimer); situaTimer = null;
+            document.getElementById('btn-situa-start').innerText = 'TIẾP TỤC';
+            document.getElementById('btn-situa-start').style.display = 'inline-block';
+            document.getElementById('btn-situa-pause').style.display = 'none';
+        }
+        function stopSitua() {
+            clearInterval(situaTimer); situaTimer = null;
+            if(situaMode === 'prep') { mafiaMode = 'main'; situaMode = 'main'; supera = 120; situaSecs = 120; document.getElementById('situa-ball').className = 'timer-ball'; startSitua(); }
+            else { situaMode = 'prep'; supera = 60; sSecs = 60; situaSecs = 60; document.getElementById('situa-ball').className = 'timer-ball'; updateSituaUI(); document.getElementById('btn-situa-start').innerText = 'SUY NGHĨ'; document.getElementById('btn-situa-start').style.display = 'inline-block'; document.getElementById('btn-situa-pause').style.display = 'none'; document.getElementById('btn-situa-stop').style.display = 'none'; }
+        }
+
+        // --- TAB 2: LOGIC VÒNG QUAY CHIẾC NÓN KỲ DIỆU (99 Ô) ---
+        const totalSlices = 99;
+        let isSpinning = false;
+        
+        function initWheel() {
+            const canvas = document.getElementById('wheelCanvas');
+            const ctx = canvas.getContext('2d');
+            const half = canvas.width / 2;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const sliceAngle = (2 * Math.PI) / totalSlices;
+            const colors = ['#d4af37', '#006644', '#8b0000']; // Vàng Kim, Xanh lục, Đỏ Ruby nhạt dạng bán suốt
+
+            for (let i = 0; i < totalSlices; i++) {
+                const angle = i * sliceAngle;
+                ctx.beginPath();
+                ctx.moveTo(half, half);
+                ctx.arc(half, half, half - 10, angle, angle + sliceAngle);
+                ctx.closePath();
+                
+                // Xác định số nhóm Giám khảo (1, 2, 3) liên tục
+                const gkId = (i % 3) + 1;
+                ctx.fillStyle = colors[gkId - 1];
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                // Ghi số hiệu mảnh ô 1, 2, 3 thanh mảnh sát rìa ngoài
+                ctx.save();
+                ctx.translate(half, half);
+                ctx.rotate(angle + sliceAngle / 2);
+                ctx.textAlign = "right";
+                ctx.textBaseline = "middle";
+                ctx.fillStyle = "#ffffff";
+                ctx.font = "bold 9px Montserrat";
+                ctx.fillText(gkId, half - 20, 0);
+                ctx.restore();
+            }
+        }
+
+        function spinWheel() {
+            if (isSpinning) return;
+            isSpinning = true;
+
+            // Reset kết quả hiển thị trước đó
+            document.getElementById('gkResultText').classList.remove('show');
+            document.getElementById('avatarText').style.display = 'block';
+            document.getElementById('avatarImg').style.display = 'none';
+
+            const canvas = document.getElementById('wheelCanvas');
+            
+            // Random ngẫu nhiên giám khảo mục tiêu (1, 2, hoặc 3)
+            const targetGK = Math.floor(Math.random() * 3) + 1;
+            
+            // Tìm ngẫu nhiên một ô có mã trùng với targetGK trong số 99 ô
+            let matchingIndices = [];
+            for(let i=0; i<totalSlices; i++) {
+                if((i % 3) + 1 === targetGK) matchingIndices.push(i);
+            }
+            const chosenSliceIndex = matchingIndices[Math.floor(Math.random() * matchingIndices.length)];
+
+            // Tính toán góc xoay cơ học
+            const sliceAngle = 360 / totalSlices;
+            // Đỉnh kim ở vị trí -90 độ (270 độ). Tính góc dừng chuẩn xác.
+            const targetAngle = 270 - (chosenSliceIndex * sliceAngle) - (sliceAngle / 2);
+            const extraRounds = (8 + Math.floor(Math.random() * 4)) * 360; // Quay từ 8 đến 12 vòng kịch tính
+            const totalRotation = extraRounds + targetAngle;
+
+            // Kích hoạt hiệu ứng mượt bằng CSS Transition
+            canvas.style.transition = "transform 6s cubic-bezier(0.15, 0.85, 0.2, 1)";
+            canvas.style.transform = `rotate(${totalRotation}deg)`;
+
+            // Âm thanh cơ học mô phỏng
+            let currentRotationStep = 0;
+            const clickInterval = setInterval(() => {
+                if(currentRotationStep < totalRotation) {
+                    currentRotationStep += 15; 
+                } else {
+                    clearInterval(clickInterval);
+                }
+            }, 30);
+
+            setTimeout(() => {
+                isSpinning = false;
+                clearInterval(clickInterval);
+                showGKResult(targetGK);
+            }, 6000);
+        }
+
+        function showGKResult(gkId) {
+            const data = gkData[gkId];
+            const banner = document.getElementById('gkResultText');
+            banner.innerText = `XIN MỜI: ${data.name} ĐẶT CÂU HỎI!`;
+            banner.classList.add('show');
+
+            // Cập nhật hiển thị ảnh Giám khảo tại tâm vòng quay
+            const avatarImg = document.getElementById('avatarImg');
+            const avatarText = document.getElementById('avatarText');
+            
+            avatarImg.src = data.img;
+            avatarText.style.display = 'none';
+            avatarImg.style.display = 'block';
+
+            triggerFlyText(data.name);
+        }
+
+        // --- HIỆU ỨNG CHỮ BAY PHẠT ĐIỂM ---
+        function triggerFlyText(text) {
+            const container = document.getElementById('effect-layer');
+            const div = document.createElement('div');
+            div.className = 'flying-text';
+            div.innerText = text;
+            container.appendChild(div);
+            setTimeout(() => div.remove(), 2500);
+        }
+
+        // Tự động khởi chạy vẽ vòng quay khi tải trang
+        window.onload = () => { initWheel(); };
+    </script>
+</body>
+</html>
